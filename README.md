@@ -37,12 +37,17 @@ The system is designed to simulate realistic interview conditions and provide cl
 
 ## Tech Stack
 
-Backend: - FastAPI - Python - Sentence Transformers (embeddings) -
-OpenAI API (question generation / transcription)
+Backend: 
+- FastAPI 
+- Python 
+- Sentence Transformers (embeddings) 
+- OpenAI API (question generation / transcription)
 
-Frontend: - TBD (React or Streamlit)
+Frontend: 
+- TBD (React or Streamlit)
 
-Deployment: - Docker
+Deployment: 
+- Docker
 
 ------------------------------------------------------------------------
 
