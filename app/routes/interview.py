@@ -1,20 +1,18 @@
 # app/routes/interview.py
 
 from fastapi import APIRouter
-from pydantic import BaseModel
+from uuid import uuid4
+
+from app.models.interview_models import InterviewRequest, InterviewResponse
 
 router = APIRouter()
 
-class InterviewRequest(BaseModel):
-    job_description: str
-    cv_text: str
-    num_questions: int
-    timed: bool
-
-@router.post("/generate")
+@router.post("/generate", response_model=InterviewResponse)
 def generate_interview(request: InterviewRequest):
-    return{
-        "message": "Interview session created",
-        "num_questions": request.num_questions,
-        "timed": request.timed
-    }
+    session_id = uuid4()
+
+    return InterviewResponse(
+        session_id=session_id,
+        num_questions=request.num_questions,
+        timed=request.timed
+    )

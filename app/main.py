@@ -7,6 +7,7 @@ from app.routes import interview
 
 app = FastAPI(
     title="AI Interview Simulator",
+    description="Backend API for AI-powered interview simulation and feedback tool.",
     version="0.1.0"
 )
 
