@@ -3,3 +3,4 @@ openai
 uvicorn
 pydantic
 python-dotenv
+pytest

@@ -5,6 +5,8 @@ from uuid import uuid4
 
 from app.models.interview_models import InterviewRequest, InterviewResponse
 
+from app.services.document_parser import DocumentParser
+
 router = APIRouter()
 
 @router.post("/generate", response_model=InterviewResponse)
@@ -16,3 +18,15 @@ def generate_interview(request: InterviewRequest):
         num_questions=request.num_questions,
         timed=request.timed
     )
+    
+@router.post("/parse-test")
+def parse_test(request: InterviewRequest):
+    cv_parser = DocumentParser(request.cv_text)
+    jd_parser = DocumentParser(request.job_description)
+
+    return {
+        "cv_sentences": cv_parser.split_sentences(),
+        "cv_keywords": cv_parser.extract_keywords(),
+        "jd_sentences": jd_parser.split_sentences(),
+        "jd_keywords": jd_parser.extract_keywords(),
+    }
