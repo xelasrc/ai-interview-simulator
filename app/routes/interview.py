@@ -4,8 +4,8 @@ from fastapi import APIRouter
 from uuid import uuid4
 
 from app.models.interview_models import InterviewRequest, InterviewResponse
-
 from app.services.document_parser import DocumentParser
+from app.scoring.alignment_scorer import compute_alignment_score
 
 router = APIRouter()
 
@@ -29,4 +29,18 @@ def parse_test(request: InterviewRequest):
         "cv_keywords": cv_parser.extract_keywords(),
         "jd_sentences": jd_parser.extract_sentences(),
         "jd_keywords": jd_parser.extract_keywords(),
+    }
+
+@router.post("/alignment-score")
+def alignment_score(request: InterviewRequest):
+    cv_parser = DocumentParser(request.cv_text)
+    jd_parser = DocumentParser(request.job_description)
+
+    cv_sentences = cv_parser.extract_sentences()
+    jd_sentences = jd_parser.extract_sentences()
+
+    score = compute_alignment_score(cv_sentences, jd_sentences)
+
+    return {
+        "alignment_score": score
     }
