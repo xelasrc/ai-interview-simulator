@@ -6,6 +6,7 @@ from uuid import uuid4
 from app.models.interview_models import InterviewRequest, InterviewResponse
 from app.services.document_parser import DocumentParser
 from app.scoring.alignment_scorer import compute_alignment_score
+from app.services.question_service import generate_questions
 
 router = APIRouter()
 
@@ -43,4 +44,17 @@ def alignment_score(request: InterviewRequest):
 
     return {
         "alignment_score": score
+    }
+    
+@router.post("/generate-questions")
+def generate_interview_questions(request: InterviewRequest):
+    questions = generate_questions(
+        request.cv_text,
+        request.job_description,
+        request.num_questions
+    )
+
+    return {
+        "questions": questions,
+        "timed": request.timed
     }
