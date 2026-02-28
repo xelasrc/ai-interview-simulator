@@ -1,12 +1,16 @@
 # app/routes/interview.py
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from uuid import uuid4
 
 from app.models.interview_models import InterviewRequest, InterviewResponse
+from app.models.session_models import Answer
+
 from app.services.document_parser import DocumentParser
-from app.scoring.alignment_scorer import compute_alignment_score
 from app.services.question_service import generate_questions
+from app.services.session_service import create_session, get_session, submit_answer
+
+from app.scoring.alignment_scorer import compute_alignment_score
 
 router = APIRouter()
 
@@ -58,3 +62,23 @@ def generate_interview_questions(request: InterviewRequest):
         "questions": questions,
         "timed": request.timed
     }
+
+@router.post("/start-session")
+def start_session(request: InterviewRequest):
+    questions = generate_questions(request.cv_text, request.job_description, request.num_questions)
+    session = create_session(questions, timed=request.timed)
+    return {"session_id": str(session.session_id), "questions": questions if not request.timed else None}
+
+@router.post("/submit-answer/{session_id}")
+def submit_answer_endpoint(session_id: str, answer: Answer):
+    updated_session = submit_answer(session_id, answer.answer_text, answer.timed_seconds)
+    if not updated_session:
+        raise HTTPException(status_code=404, detail="Session not found or already complete")
+    return {"current_index": updated_session.current_index, "total_questions": len(updated_session.questions)}
+
+@router.get("/session/{session_id}")
+def get_session_endpoint(session_id: str):
+    session = get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return session
