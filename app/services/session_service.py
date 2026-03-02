@@ -23,7 +23,7 @@ def submit_answer(session_id: str, answer_text: str, timed_seconds: int = None):
         return None
     
     if session.current_index >= len(session.questions):
-        return None
+        return session
     
     question = session.questions[session.current_index]
     

@@ -3,8 +3,7 @@
 from fastapi import APIRouter, HTTPException
 from uuid import uuid4
 
-from app.models.interview_models import InterviewRequest, InterviewResponse
-from app.models.session_models import Answer
+from app.models.interview_models import InterviewRequest, InterviewResponse, SubmitAnswerRequest
 
 from app.services.document_parser import DocumentParser
 from app.services.question_service import generate_questions
@@ -77,18 +76,30 @@ def start_session(request: InterviewRequest):
     }
 
 @router.post("/submit-answer/{session_id}")
-def submit_answer_endpoint(session_id: str, answer: Answer):
-    updated_session = submit_answer(session_id, answer.answer_text, answer.timed_seconds)
+def submit_answer_endpoint(session_id: str, request: SubmitAnswerRequest):
+    updated_session = submit_answer(
+        session_id, 
+        request.answer_text, 
+        request.timed_seconds
+    )
     
     if not updated_session:
-        raise HTTPException(status_code=404, detail="Session not found or already complete")
+        raise HTTPException(status_code=404, detail="Session not found")
     
-    latest_answer = updated_session.answers[-1]
+    if len(updated_session.answers) == 0:
+        raise HTTPException(status_code=400, detail="No answer recorded")
 
+    latest_answer = updated_session.answers[-1]
+    
+    session_complete = (
+        updated_session.current_index >= len(updated_session.questions)
+    )
+    
     return {
-        "current_index": updated_session.current_index, 
+        "current_index": updated_session.current_index,
         "total_questions": len(updated_session.questions),
-        "feedback": latest_answer.feedback 
+        "feedback": latest_answer.feedback,
+        "session_complete": session_complete
     }
 
 @router.get("/session/{session_id}")
