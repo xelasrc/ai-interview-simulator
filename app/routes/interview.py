@@ -65,16 +65,31 @@ def generate_interview_questions(request: InterviewRequest):
 
 @router.post("/start-session")
 def start_session(request: InterviewRequest):
-    questions = generate_questions(request.cv_text, request.job_description, request.num_questions)
+    questions = generate_questions(
+        request.cv_text, 
+        request.job_description, 
+        request.num_questions
+    )
     session = create_session(questions, timed=request.timed)
-    return {"session_id": str(session.session_id), "questions": questions if not request.timed else None}
+    return {
+        "session_id": str(session.session_id), 
+        "questions": questions if not request.timed else None
+    }
 
 @router.post("/submit-answer/{session_id}")
 def submit_answer_endpoint(session_id: str, answer: Answer):
     updated_session = submit_answer(session_id, answer.answer_text, answer.timed_seconds)
+    
     if not updated_session:
         raise HTTPException(status_code=404, detail="Session not found or already complete")
-    return {"current_index": updated_session.current_index, "total_questions": len(updated_session.questions)}
+    
+    latest_answer = updated_session.answers[-1]
+
+    return {
+        "current_index": updated_session.current_index, 
+        "total_questions": len(updated_session.questions),
+        "feedback": latest_answer.feedback 
+    }
 
 @router.get("/session/{session_id}")
 def get_session_endpoint(session_id: str):
