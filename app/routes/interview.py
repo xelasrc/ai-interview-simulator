@@ -108,3 +108,44 @@ def get_session_endpoint(session_id: str):
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     return session
+
+@router.get("/session/{session_id}/summary")
+def get_session_summary(session_id: str):
+    session = get_session(session_id)
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    if len(session.answers) == 0:
+        raise HTTPException(status_code=400, detail="No answers recorded yet")
+
+    total_questions = len(session.questions)
+    total_answered = len(session.answers)
+
+    scores = [
+        answer.feedback.get("overall_score", 0)
+        for answer in session.answers
+        if answer.feedback
+    ]
+
+    average_score = sum(scores) / len(scores) if scores else 0
+
+    best_answer = max(
+        session.answers,
+        key=lambda a: a.feedback.get("overall_score", 0) if a.feedback else 0
+    )
+
+    worst_answer = min(
+        session.answers,
+        key=lambda a: a.feedback.get("overall_score", 0) if a.feedback else 0
+    )
+
+    return {
+        "total_questions": total_questions,
+        "total_answered": total_answered,
+        "average_score": round(average_score, 2),
+        "best_question": best_answer.question,
+        "best_score": best_answer.feedback.get("overall_score", 0),
+        "weakest_question": worst_answer.question,
+        "weakest_score": worst_answer.feedback.get("overall_score", 0),
+    }
