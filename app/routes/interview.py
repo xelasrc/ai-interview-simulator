@@ -37,19 +37,10 @@ def parse_test(request: InterviewRequest):
 
 @router.post("/alignment-score")
 def alignment_score(request: InterviewRequest):
-    cv_parser = DocumentParser(request.cv_text)
-    jd_parser = DocumentParser(request.job_description)
+    cv_sentences = DocumentParser(request.cv_text).extract_sentences()
+    jd_sentences = DocumentParser(request.job_description).extract_sentences()
 
-    cv_sentences = cv_parser.extract_sentences()
-    jd_sentences = jd_parser.extract_sentences()
-
-    scores = compute_alignment_score(cv_sentences, jd_sentences)
-
-    return {
-        "cv_to_jd": scores["cv_to_jd"],
-        "jd_to_cv": scores["jd_to_cv"],
-        "overall_alignment_score": scores["overall"],
-    }
+    return compute_alignment_score(cv_sentences, jd_sentences)
     
 @router.post("/generate-questions")
 def generate_interview_questions(request: InterviewRequest):
