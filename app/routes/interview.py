@@ -43,10 +43,12 @@ def alignment_score(request: InterviewRequest):
     cv_sentences = cv_parser.extract_sentences()
     jd_sentences = jd_parser.extract_sentences()
 
-    score = compute_alignment_score(cv_sentences, jd_sentences)
+    scores = compute_alignment_score(cv_sentences, jd_sentences)
 
     return {
-        "alignment_score": score
+        "cv_to_jd": scores["cv_to_jd"],
+        "jd_to_cv": scores["jd_to_cv"],
+        "overall_alignment_score": scores["overall"],
     }
     
 @router.post("/generate-questions")
