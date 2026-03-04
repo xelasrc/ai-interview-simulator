@@ -39,18 +39,31 @@ class DocumentParser:
         text = re.sub(r"[^a-z0-9\s\+\#\./]", " ", text)
         text = re.sub(r"\s+", " ", text)
         return text.strip()
-    
-    def extract_sentences(self):
+        
+    def extract_sentences(self, filter_filler: bool = True) -> list[str]:
         """
         Splits text into sentences, cleaning each.
         Splits on ., !, ?, or line breaks.
+
+        Args:
+            filter_filler: Strip boilerplate JD sentences (equal opportunity,
+                           benefits, etc.) that add noise to alignment scoring.
+                           Defaults to True. Pass False if you want raw output
+                           e.g. for the /parse-test debug endpoint.
         """
-        # Split on ., !, ?, or newLine
         raw_sentences = re.split(r"[.!?\n]", self.raw_text)
-        sentences = [
-            s.strip().lower() for s in raw_sentences
-            if s.strip()
-        ]
+        sentences = []
+
+        for s in raw_sentences:
+            cleaned = s.strip().lower()
+            if not cleaned:
+                continue
+            if filter_filler and self._is_filler(cleaned):
+                continue
+            if len(cleaned.split()) < 4:
+                continue
+            sentences.append(cleaned)
+
         return sentences
     
     def extract_keywords(self, top_n=20, custom_stopwords=None):

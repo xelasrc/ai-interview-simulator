@@ -29,9 +29,9 @@ def parse_test(request: InterviewRequest):
     jd_parser = DocumentParser(request.job_description)
 
     return {
-        "cv_sentences": cv_parser.extract_sentences(),
+        "cv_sentences": cv_parser.extract_sentences(filter_filler=False),
         "cv_keywords": cv_parser.extract_keywords(),
-        "jd_sentences": jd_parser.extract_sentences(),
+        "jd_sentences": jd_parser.extract_sentences(filter_filler=False),
         "jd_keywords": jd_parser.extract_keywords(),
     }
 
